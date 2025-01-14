@@ -1,2 +1,2 @@
 # HTMLtoDOC
-Convert your table that 
+Convert your table html code to doc file.
