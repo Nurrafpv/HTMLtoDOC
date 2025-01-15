@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table Viewer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 13px;
+            margin: 20px;
+        }
+        #tableContainer {
+            margin-top: 20px;
+            padding: 20px;
+            background: #fff;
+            border: 1px solid #ddd;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 13px;
+            overflow-x: auto;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #errorMessage {
+            color: red;
+            font-style: italic;
+        }
+        p {
+            text-align: justify;
+            margin: 0 0 1em 0; /* Add spacing between paragraphs */
+        }
+    </style>
+</head>
+<body>
+    <h1 style="font-size: 16px;">Generated Table</h1>
+    <div id="tableContainer">Loading...</div>
+    <p id="errorMessage" style="display: none;"></p>
+    <button id="downloadBtn" style="display: none;">Download as DOC</button>
+
+    <script>
+        // Retrieve the generated HTML from local storage
+        const htmlOutput = localStorage.getItem("generatedHTML");
+        const tableContainer = document.getElementById("tableContainer");
+        const errorMessage = document.getElementById("errorMessage");
+        const downloadBtn = document.getElementById("downloadBtn");
+
+        if (htmlOutput) {
+            try {
+                tableContainer.innerHTML = htmlOutput;
+                downloadBtn.style.display = "inline-block";
+            } catch (error) {
+                tableContainer.innerHTML = "<p>No table data provided.</p>";
+                errorMessage.textContent = "Failed to load table: Invalid HTML data.";
+                errorMessage.style.display = "block";
+            }
+        } else {
+            tableContainer.innerHTML = "<p>No table data provided.</p>";
+        }
+
+        // Download the table as a DOC file
+        downloadBtn.addEventListener("click", function () {
+            const tableContent = tableContainer.innerHTML.trim();
+
+            const docContent = `
+            <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <style>
+                        body {
+                            font-family: 'Segoe UI', sans-serif;
+                            font-size: 13px;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                        }
+                        th, td {
+                            border: 1px solid #ddd;
+                            padding: 8px;
+                            text-align: justify;
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${tableContent}
+                </body>
+            </html>
+            `;
+
+            const blob = new Blob([docContent], { type: "application/msword" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "table.doc";
+            link.click();
+            URL.revokeObjectURL(link.href);
+        });
+    </script>
+</body>
+</html>
