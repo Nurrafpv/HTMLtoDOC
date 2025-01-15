@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+        }
+        p {
+            text-align: center;
+            font-size: 1.1em;
+        }
+        form {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            font-size: 1.1em;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #output {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        #tableContainer {
+            margin-top: 10px;
+            overflow-x: auto;
+        }
+        @media (max-width: 600px) {
+            form, #output {
+                padding: 15px;
+            }
+            textarea {
+                height: 120px;
+            }
+            button {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>HTML Table Generator</h1>
+    <p>Enter the HTML code for a table below, then click "Submit" to see the generated table:</p>
+    
+    <form id="tableForm">
+        <textarea id="htmlInput" placeholder="Enter your table HTML code here..."></textarea>
+        <br>
+        <button type="submit">Submit</button>
+    </form>
+
+    <div id="output">
+        <h2>Generated Table:</h2>
+        <div id="tableContainer"></div>
+        <button id="downloadBtn" style="display: none; margin-top: 20px;">Download Table as DOC</button>
+    </div>
+
+    <script>
+        document.getElementById('tableForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent form submission
+
+            // Get the user input
+            const htmlInput = document.getElementById('htmlInput').value;
+
+            // Insert the HTML into the table container
+            const tableContainer = document.getElementById('tableContainer');
+            tableContainer.innerHTML = htmlInput;
+
+            // Show the download button if there's content
+            const downloadBtn = document.getElementById('downloadBtn');
+            if (htmlInput.trim()) {
+                downloadBtn.style.display = 'block';
+            } else {
+                downloadBtn.style.display = 'none';
+            }
+        });
+
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            const tableContainer = document.getElementById('tableContainer').innerHTML;
+
+            // Create a blob for the table content
+            const blob = new Blob([`<html><body>${tableContainer}</body></html>`], {
+                type: 'application/msword',
+            });
+
+            // Create a link to download the file
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'table.doc';
+
+            // Simulate a click on the link
+            link.click();
+
+            // Clean up
+            URL.revokeObjectURL(link.href);
+        });
+    </script>
+</body>
+</html>
