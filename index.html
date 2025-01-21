@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimized HTML Code Generator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 13px;
+            margin: 20px;
+        }
+        textarea, button {
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 13px;
+            margin: 10px 0;
+            width: 100%;
+        }
+        textarea {
+            height: 200px;
+            padding: 10px;
+        }
+        button {
+            padding: 10px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #tableContainer {
+            margin-top: 20px;
+            padding: 20px;
+            background: #fff;
+            border: 1px solid #ddd;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Optimized Text to Table Generator</h1>
+    <p>Paste your text below. The table will be generated automatically.</p>
+    <textarea id="inputText" placeholder="Paste your text here..."></textarea>
+    <button onclick="processTextAndGenerateTable()">Generate Table</button>
+
+    <div id="tableContainer" style="display: none;">
+        <h2>Generated Table</h2>
+        <div id="tableContent">Loading...</div>
+        <button id="downloadBtn" style="display: none;">Download as DOC</button>
+    </div>
+
+    <script>
+        function processTextAndGenerateTable() {
+            const inputText = document.getElementById('inputText').value.trim();
+
+            if (!inputText) {
+                alert('Please provide valid input.');
+                return;
+            }
+
+            // Step 1: Replace [nnnn] with [Para nnnn] and merge lines
+            const lines = inputText.split('\n');
+            let processedText = '';
+
+            for (let i = 0; i < lines.length; i++) {
+                const match = lines[i].match(/\[(\d{4})\]/);
+                if (match && i + 1 < lines.length) {
+                    processedText += lines[i].replace(/\[(\d{4})\]/, '[Para $1]') + ' ' + lines[i + 1].trim() + '\n';
+                    i++;
+                } else {
+                    processedText += lines[i] + '\n';
+                }
+            }
+
+            // Step 2: Generate HTML Table
+            let htmlOutput = `
+<table border="1" style="width: 100%; border-collapse: collapse; text-align: justify; font-family: 'Segoe UI', sans-serif; font-size: 13px;">
+    <tr>
+        <th>Feature No.</th>
+        <th>Details</th>
+        <th>Added Texts</th>
+    </tr>`;
+
+            const processedLines = processedText.trim().split('\n');
+            let currentFeature = null;
+            let addedTexts = "";
+
+            processedLines.forEach(line => {
+                const featureMatch = line.match(/^Feature (\d+): (.+)$/);
+                if (featureMatch) {
+                    if (currentFeature) {
+                        htmlOutput += `<td>${addedTexts.trim() || "No Text Added"}</td></tr>`;
+                    }
+                    currentFeature = {
+                        number: featureMatch[1],
+                        description: featureMatch[2]
+                    };
+                    htmlOutput += `
+    <tr>
+        <td>Feature ${currentFeature.number}</td>
+        <td>${currentFeature.description}</td>`;
+                    addedTexts = "";
+                } else if (currentFeature) {
+                    const textMatch = line.match(/^\s*\d+\.\s*(.+)$/);
+                    if (textMatch) {
+                        let text = textMatch[1]
+                            .replace(/%1(.+?)%1/g, "$1")
+                            .replace(/%2(.+?)%2/g, "<b>$1</b>")
+                            .replace(/%3(.+?)%3/g, "<b><span style='background-color: yellow;'>$1</span></b>");
+                        addedTexts += `<p style="margin-bottom: 1em;">${text}</p>`;
+                    }
+                }
+            });
+
+            if (currentFeature) {
+                htmlOutput += `<td>${addedTexts.trim() || "No Text Added"}</td></tr>`;
+            }
+
+            htmlOutput += `
+</table>`;
+
+            // Display the table
+            document.getElementById('tableContent').innerHTML = htmlOutput.trim();
+            document.getElementById('tableContainer').style.display = 'block';
+
+            // Enable download button
+            const downloadBtn = document.getElementById('downloadBtn');
+            downloadBtn.style.display = 'inline-block';
+            downloadBtn.onclick = function () {
+                const docContent = `
+                <html>
+                    <head>
+                        <meta charset="UTF-8">">
+                        <style>
+                            body {
+                                font-family: 'Segoe UI', sans-serif;
+                                font-size: 13px;
+                            }
+                            table {
+                                width: 100%;
+                                border-collapse: collapse;
+                            }
+                            th, td {
+                                border: 1px solid #ddd;
+                                padding: 8px;
+                                text-align: justify;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        ${htmlOutput.trim()}
+                    </body>
+                </html>`;
+
+                const blob = new Blob([docContent], { type: "application/msword" });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = "table.doc";
+                link.click();
+                URL.revokeObjectURL(link.href);
+            };
+        }
+    </script>
+</body>
+</html>
